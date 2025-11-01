@@ -7,18 +7,18 @@ Mentor: init27
 
 ### Goals:
 
-- [] Add Env for Pokemon that interacts well given current structure (avoid vision since we don't have support for that, text is better)
-- [] Baseline <10B model performance
-- [] Setup Synthetic SFT Dataset if needed
-- [] Setup GRPO Trainer
+- [ ] Add Env for Pokemon that interacts well given current structure (avoid vision since we don't have support for that, text is better)
+- [ ] Baseline <10B model performance
+- [ ] Setup Synthetic SFT Dataset if needed
+- [ ] Setup GRPO Trainer
 
 
 ### Task Assignees:
 
-- [] cpich3g and init27: Figure out best environment for the use-case
+- [ ] cpich3g and init27: Figure out best environment for the use-case
 
 ### Milestones:
 
-- [] Add Env
-- [] Baseline on Env
-- [] Setup Trainer
+- [ ] Add Env
+- [ ] Baseline on Env
+- [ ] Setup Trainer
