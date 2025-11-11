@@ -119,3 +119,16 @@ class TestFormatFirstRewards:
             env_v3.correct_abstention_reward
         )
         assert reward == expected
+
+    def test_perfect_format_but_empty_proof(self, env_v3):
+        """Tests that a present-but-empty proof gets the missing trace penalty."""
+        llm_response = (
+            f"{self.ANALYSIS_START}Analysis.{self.END}\n"
+            f"{self.PROOF_START}{self.END}\n"  # Empty proof
+            f"{self.FINAL_START}Final.{self.END}"
+        )
+        reward = env_v3.calculate_total_reward(llm_response, self.CONTEXT, self.GROUND_TRUTH_SYNTHESIS)
+        # The format is perfect, so it gets the format reward.
+        # Then, the logic checks for an empty proof and applies the penalty.
+        expected = env_v3.exact_format_reward + env_v3.missing_trace_penalty
+        assert reward == expected

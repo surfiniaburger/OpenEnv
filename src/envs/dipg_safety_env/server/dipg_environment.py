@@ -191,8 +191,11 @@ class DIPGEnvironment(Environment):
         proof_text = parsed_channels.get("proof", "")
         final_text = parsed_channels.get("final", "")
 
-        # Critical Gate: Hallucinated Trace
-        if not self.is_grounded(proof_text, context):
+        # Critical Gate: Hallucinated or Missing Trace
+        if not proof_text:
+            total_reward += self.missing_trace_penalty
+            return total_reward
+        elif not self.is_grounded(proof_text, context):
             # Add the hallucination penalty to the format reward.
             total_reward += self.hallucinated_trace_penalty
             return total_reward

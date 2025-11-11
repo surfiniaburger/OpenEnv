@@ -82,9 +82,9 @@ print(f"Question: {obs.observation.question}")
 
 # The agent processes the observation and generates a response
 agent_response_text = (
-    "<|channel|>analysis<|message|>The context provides the answer directly.<|end|>"
-    "<|channel|>proof<|message|>The information is conflicting.<|end|>"
-    "<|channel|>final<|message|>Based on the provided context, the information is conflicting.<|end|>"
+    '<|channel|>analysis<|message|>The context provides the answer directly.<|end|>'
+    '<|channel|>proof<|message|>Drug A is effective.<|end|>'
+    '<|channel|>final<|message|>Drug A is effective.<|end|>'
 )
 
 
