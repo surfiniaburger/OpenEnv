@@ -1,20 +1,18 @@
 # ==================================================================================
-# DATA GENERATOR V9 (Combined Solution for Training and Metadata)
+# DATA GENERATOR V12 (Final Combined Solution for Training and Metadata)
 # ==================================================================================
 import random
 import json
 import uuid
 from datetime import datetime
 
-print("--- Generating Synthetic Dataset (Unsloth `train_on_responses_only` Format) ---")
+print("--- Generating Synthetic Dataset (2-Turn ShareGPT + Metadata) ---")
 
 # --- 1. Define Standard Prompts ---
-# System prompt sets the high-level context for the AI model.
 SYSTEM_PROMPT = f"""You are ChatGPT, a large language model trained by OpenAI.
 Knowledge cutoff: 2024-06
 Current date: {datetime.now().strftime('%Y-%m-%d')}"""
 
-# Developer prompt provides task-specific instructions.
 DEVELOPER_PROMPT = """# Instructions
 You are an expert AI assistant specializing in medical information. You must reason about the user's request step-by-step and then provide a final, conclusive answer. Your response must be grounded in the provided text only. Do not use outside knowledge."""
 
@@ -78,7 +76,7 @@ def generate_anti_knowledge_needle():
 # --- 4. Refactored Master Function to Assemble the Final Dataset Entry ---
 def create_training_example(needle_generator_func, seed, example_id):
     """
-    Generates a single, structured training example and its corresponding metadata.
+    Generates a single, universally compatible 2-turn training example and its metadata.
     """
     # 1. Generate the core "needle" (the specific scenario)
     needle_context, question, answer_dict = needle_generator_func()
@@ -88,8 +86,9 @@ def create_training_example(needle_generator_func, seed, example_id):
     haystack_sentences.insert(random.randint(0, len(haystack_sentences)), needle_context)
     long_context = "\n".join(haystack_sentences)
 
-    # 3. Restructure the conversation for `train_on_responses_only`
+    # 3. Create the 2-turn conversation structure
     user_content = (
+        f"{SYSTEM_PROMPT}\n\n"
         f"{DEVELOPER_PROMPT}\n\n"
         f"**CONTEXT:**\n{long_context}\n\n"
         f"**REQUEST:**\n{question}\n\n"
@@ -99,11 +98,10 @@ def create_training_example(needle_generator_func, seed, example_id):
     )
     assistant_content = answer_dict['final']
 
-    # 4. Create the clean data example for tools like Unsloth
+    # 4. Create the final data example
     data_example = {
         "id": example_id,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_content},
             {"role": "assistant", "content": assistant_content}
         ]
@@ -142,7 +140,6 @@ for i in range(dataset_size):
     example_seed = random.randint(0, 2**32 - 1)
     random.seed(example_seed)
 
-    # Generate a unique ID for linking
     example_id = str(uuid.uuid4())
 
     data, metadata = create_training_example(generator_func, example_seed, example_id)
@@ -171,21 +168,19 @@ print(f"   - Metadata saved to: {metadata_output_filename}")
 # --- 7. Verification Step ---
 print("\n--- Verifying file structures ---")
 
-# Verify data file
 with open(data_output_filename, 'r') as f:
     first_line = json.loads(f.readline())
     print("\nKeys in the first data object:")
     print(list(first_line.keys()))
     print("\n'messages' structure in the first data object:")
-    for msg in first_line['messages']:
-        print(f"- role: {msg['role']}")
+    roles = [msg['role'] for msg in first_line['messages']]
+    print(f"- roles: {roles}")
+    if roles == ['user', 'assistant']:
+        print("✅ Conversation turns are correct (user -> assistant).")
 
-# Verify metadata file
 with open(metadata_output_filename, 'r') as f:
     first_line = json.loads(f.readline())
     print("\nKeys in the first metadata object:")
     print(list(first_line.keys()))
-    print("\n'generation_info' in the first metadata object:")
-    print(first_line['generation_info'])
 
 print("\n✅ Dataset and metadata formats look correct.")
