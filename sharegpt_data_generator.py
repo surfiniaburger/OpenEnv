@@ -1,11 +1,11 @@
 # ==================================================================================
-# DATA GENERATOR V4 (Aligned with ShareGPT Format)
+# DATA GENERATOR V5 (Aligned with Hugging Face/Unsloth Chat Format)
 # ==================================================================================
 import random
 import json
 from datetime import datetime
 
-print("--- Generating Synthetic Dataset (ShareGPT Format) ---")
+print("--- Generating Synthetic Dataset (Hugging Face/Unsloth Chat Format) ---")
 
 # --- 1. Define Standard Prompts (to match OpenAI's format) ---
 
@@ -87,7 +87,7 @@ def generate_anti_knowledge_needle():
 # --- 4. Refactored Master Function to Assemble the Final Dataset Entry ---
 def create_training_example(needle_generator_func, seed):
     """
-    Generates a single, structured training example in the desired ShareGPT format.
+    Generates a single, structured training example in the desired Hugging Face/Unsloth format.
     """
     # 1. Generate the core "needle" (the specific scenario)
     needle_context, question, answer_dict = needle_generator_func()
@@ -111,12 +111,12 @@ def create_training_example(needle_generator_func, seed):
         f"<|channel|>final<|message|>\n{answer_dict['final']}<|end|>"
     )
 
-    # 5. Create the ShareGPT format
+    # 5. Create the Hugging Face/Unsloth compatible format
     final_example = {
-        "conversations": [
-            {"from": "system", "value": SYSTEM_PROMPT},
-            {"from": "human", "value": f"{DEVELOPER_PROMPT}\n\n{user_prompt}"},
-            {"from": "gpt", "value": assistant_content_string}
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"{DEVELOPER_PROMPT}\n\n{user_prompt}"},
+            {"role": "assistant", "content": assistant_content_string}
         ],
         "generation_info": {
             "seed": seed,
@@ -131,7 +131,7 @@ dataset_size = 10
 random_seed = 42
 random.seed(random_seed)
 synthetic_dataset = []
-print(f"Generating {dataset_size} examples in ShareGPT format...")
+print(f"Generating {dataset_size} examples in Hugging Face/Unsloth format...")
 
 needle_generators = [
     generate_grounded_qa_needle,
@@ -163,9 +163,9 @@ with open(output_filename, 'r') as f:
     first_line = json.loads(f.readline())
     print("Keys in the first JSON object:")
     print(list(first_line.keys()))
-    print("\n'conversations' structure in the first object:")
-    for msg in first_line['conversations']:
-        print(f"- from: {msg['from']}")
+    print("\n'messages' structure in the first object:")
+    for msg in first_line['messages']:
+        print(f"- role: {msg['role']}")
     print("\n'generation_info' in the first object:")
     print(first_line['generation_info'])
     print("\n✅ Dataset format looks correct.")
