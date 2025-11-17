@@ -95,3 +95,7 @@ Desktop.ini
 *claude*
 *Claude*
 *CLAUDE*
+
+# Exclude generated dataset files
+dipg_sft_dataset_sharegpt_format.jsonl
+dipg_sft_dataset_metadata.jsonl

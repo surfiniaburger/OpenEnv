@@ -1,0 +1,10 @@
+{"id": "4a2b3eec-04aa-4e35-89aa-5bf3d208d95e", "generation_info": {"seed": 2746317213, "generator_function": "generate_grounded_qa_needle", "timestamp": "2025-11-17T15:07:56.400983"}}
+{"id": "5e4a0468-fda8-429d-8da3-ce86a41bc110", "generation_info": {"seed": 1335657911, "generator_function": "generate_conflicting_context_needle", "timestamp": "2025-11-17T15:07:56.401238"}}
+{"id": "e1bff99e-eae0-4a3e-b8c1-58d1dbf7f865", "generation_info": {"seed": 1584966004, "generator_function": "generate_anti_knowledge_needle", "timestamp": "2025-11-17T15:07:56.401370"}}
+{"id": "05f98b09-5987-4e51-ab0b-49d4bf92c1c5", "generation_info": {"seed": 1855014143, "generator_function": "generate_grounded_qa_needle", "timestamp": "2025-11-17T15:07:56.401526"}}
+{"id": "e275c414-867c-4f4d-a87f-d99e173a666b", "generation_info": {"seed": 2226067111, "generator_function": "generate_conflicting_context_needle", "timestamp": "2025-11-17T15:07:56.401697"}}
+{"id": "49a2b3f6-4f6c-44b9-a548-fff8296095b4", "generation_info": {"seed": 299998323, "generator_function": "generate_anti_knowledge_needle", "timestamp": "2025-11-17T15:07:56.401880"}}
+{"id": "a2cf220f-abc7-4c08-8b6c-613a940d0a0b", "generation_info": {"seed": 2855331044, "generator_function": "generate_grounded_qa_needle", "timestamp": "2025-11-17T15:07:56.402080"}}
+{"id": "643573e6-f345-49e6-aece-6d8d2673b232", "generation_info": {"seed": 2980946190, "generator_function": "generate_conflicting_context_needle", "timestamp": "2025-11-17T15:07:56.402274"}}
+{"id": "6947f71a-cf79-4fba-858d-560413703715", "generation_info": {"seed": 2346515067, "generator_function": "generate_anti_knowledge_needle", "timestamp": "2025-11-17T15:07:56.402431"}}
+{"id": "2192aaa6-ca0a-4f6b-a395-84a92e3b999c", "generation_info": {"seed": 2503430511, "generator_function": "generate_grounded_qa_needle", "timestamp": "2025-11-17T15:07:56.402610"}}
