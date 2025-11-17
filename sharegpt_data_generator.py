@@ -1,32 +1,22 @@
 # ==================================================================================
-# DATA GENERATOR V6 (Separated Data and Metadata for Tool Compatibility)
+# DATA GENERATOR V9 (Combined Solution for Training and Metadata)
 # ==================================================================================
 import random
 import json
 import uuid
 from datetime import datetime
 
-print("--- Generating Synthetic Dataset (Hugging Face/Unsloth Chat Format) ---")
+print("--- Generating Synthetic Dataset (Unsloth `train_on_responses_only` Format) ---")
 
-# --- 1. Define Standard Prompts (to match OpenAI's format) ---
-
+# --- 1. Define Standard Prompts ---
 # System prompt sets the high-level context for the AI model.
 SYSTEM_PROMPT = f"""You are ChatGPT, a large language model trained by OpenAI.
 Knowledge cutoff: 2024-06
-Current date: {datetime.now().strftime('%Y-%m-%d')}
-
-Reasoning: medium
-
-# Valid channels: analysis, proof, final. Channel must be included for every message.
-Calls to these tools must go to the commentary channel: 'functions'."""
+Current date: {datetime.now().strftime('%Y-%m-%d')}"""
 
 # Developer prompt provides task-specific instructions.
 DEVELOPER_PROMPT = """# Instructions
-You are an expert AI assistant specializing in medical information. You must reason about the user's request step-by-step.
-1. First, analyze the user's request and the provided context in an 'analysis' channel.
-2. Second, provide the direct quotes from the source text that justify your answer in a 'proof' channel.
-3. Finally, provide the direct, conclusive answer in a 'final' channel.
-Your response must be grounded in the provided text only. Do not use outside knowledge."""
+You are an expert AI assistant specializing in medical information. You must reason about the user's request step-by-step and then provide a final, conclusive answer. Your response must be grounded in the provided text only. Do not use outside knowledge."""
 
 
 # --- 2. Building Blocks for Medical Axioms (No changes needed) ---
@@ -79,7 +69,7 @@ def generate_anti_knowledge_needle():
     question = f"Based on this, {real_question}"
     answer_dict = {
         "analysis": f"The user is asking a real-world question ('{real_question}') but has provided a context containing only a specific medical axiom. The axiom does not contain the information needed to answer the question. Therefore, the model must abstain.",
-        "proof": f"[Proof]: The provided context ('{axiom}') does not contain information relevant to the user's question about '{real_question}'.",
+        "proof": f"The provided context ('{axiom}') does not contain information relevant to the user's question about '{real_question}'.",
         "final": "The provided context from the neuro-oncology report does not contain the information needed to answer that question."
     }
     return context, question, answer_dict
@@ -98,31 +88,28 @@ def create_training_example(needle_generator_func, seed, example_id):
     haystack_sentences.insert(random.randint(0, len(haystack_sentences)), needle_context)
     long_context = "\n".join(haystack_sentences)
 
-    # 3. Format the user prompt
-    user_prompt = f"{long_context}\n\n{question}"
-
-    # 4. Assemble the assistant's response string
-    proof_channel_content = ""
-    if "proof" in answer_dict and answer_dict["proof"]:
-        proof_channel_content = f"<|channel|>proof<|message|>\n{answer_dict['proof']}<|end|>\n"
-
-    assistant_content_string = (
-        f"<|channel|>analysis<|message|>\n{answer_dict['analysis']}<|end|>\n"
-        f"{proof_channel_content}"
-        f"<|channel|>final<|message|>\n{answer_dict['final']}<|end|>"
+    # 3. Restructure the conversation for `train_on_responses_only`
+    user_content = (
+        f"{DEVELOPER_PROMPT}\n\n"
+        f"**CONTEXT:**\n{long_context}\n\n"
+        f"**REQUEST:**\n{question}\n\n"
+        f"**REASONING STEPS:**\n"
+        f"ANALYSIS:\n{answer_dict['analysis']}\n\n"
+        f"PROOF:\n{answer_dict['proof']}"
     )
+    assistant_content = answer_dict['final']
 
-    # 5. Create the clean data example for tools like Unsloth
+    # 4. Create the clean data example for tools like Unsloth
     data_example = {
         "id": example_id,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"{DEVELOPER_PROMPT}\n\n{user_prompt}"},
-            {"role": "assistant", "content": assistant_content_string}
+            {"role": "user", "content": user_content},
+            {"role": "assistant", "content": assistant_content}
         ]
     }
 
-    # 6. Create the corresponding metadata record
+    # 5. Create the corresponding metadata record
     metadata_record = {
         "id": example_id,
         "generation_info": {
