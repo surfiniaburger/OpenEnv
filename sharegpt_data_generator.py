@@ -1,8 +1,9 @@
 # ==================================================================================
-# DATA GENERATOR V5 (Aligned with Hugging Face/Unsloth Chat Format)
+# DATA GENERATOR V6 (Separated Data and Metadata for Tool Compatibility)
 # ==================================================================================
 import random
 import json
+import uuid
 from datetime import datetime
 
 print("--- Generating Synthetic Dataset (Hugging Face/Unsloth Chat Format) ---")
@@ -85,9 +86,9 @@ def generate_anti_knowledge_needle():
 
 
 # --- 4. Refactored Master Function to Assemble the Final Dataset Entry ---
-def create_training_example(needle_generator_func, seed):
+def create_training_example(needle_generator_func, seed, example_id):
     """
-    Generates a single, structured training example in the desired Hugging Face/Unsloth format.
+    Generates a single, structured training example and its corresponding metadata.
     """
     # 1. Generate the core "needle" (the specific scenario)
     needle_context, question, answer_dict = needle_generator_func()
@@ -111,27 +112,37 @@ def create_training_example(needle_generator_func, seed):
         f"<|channel|>final<|message|>\n{answer_dict['final']}<|end|>"
     )
 
-    # 5. Create the Hugging Face/Unsloth compatible format
-    final_example = {
+    # 5. Create the clean data example for tools like Unsloth
+    data_example = {
+        "id": example_id,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": f"{DEVELOPER_PROMPT}\n\n{user_prompt}"},
             {"role": "assistant", "content": assistant_content_string}
-        ],
+        ]
+    }
+
+    # 6. Create the corresponding metadata record
+    metadata_record = {
+        "id": example_id,
         "generation_info": {
             "seed": seed,
             "generator_function": needle_generator_func.__name__,
             "timestamp": datetime.now().isoformat()
         }
     }
-    return final_example
+
+    return data_example, metadata_record
 
 # --- 5. Main Generation Loop ---
 dataset_size = 10
 random_seed = 42
 random.seed(random_seed)
+
 synthetic_dataset = []
-print(f"Generating {dataset_size} examples in Hugging Face/Unsloth format...")
+metadata_records = []
+
+print(f"Generating {dataset_size} examples...")
 
 needle_generators = [
     generate_grounded_qa_needle,
@@ -141,31 +152,53 @@ needle_generators = [
 
 for i in range(dataset_size):
     generator_func = needle_generators[i % len(needle_generators)]
-    # Pass a new random seed for each example to ensure variety but allow reproducibility
     example_seed = random.randint(0, 2**32 - 1)
     random.seed(example_seed)
-    synthetic_dataset.append(create_training_example(generator_func, example_seed))
 
-# Reset seed for file writing if needed, though not strictly necessary here.
+    # Generate a unique ID for linking
+    example_id = str(uuid.uuid4())
+
+    data, metadata = create_training_example(generator_func, example_seed, example_id)
+    synthetic_dataset.append(data)
+    metadata_records.append(metadata)
+
+# Reset seed for file writing if needed
 random.seed(random_seed)
 
-output_filename = "dipg_sft_dataset_sharegpt_format.jsonl"
-with open(output_filename, "w") as f:
+# --- 6. Save Data and Metadata to Separate Files ---
+data_output_filename = "dipg_sft_dataset_sharegpt_format.jsonl"
+with open(data_output_filename, "w") as f:
     for item in synthetic_dataset:
         f.write(json.dumps(item) + "\n")
 
-print(f"✅ Generated {len(synthetic_dataset)} examples.")
-print(f"Dataset saved to: {output_filename}")
+metadata_output_filename = "dipg_sft_dataset_metadata.jsonl"
+with open(metadata_output_filename, "w") as f:
+    for item in metadata_records:
+        f.write(json.dumps(item) + "\n")
 
-# --- Verification Step ---
-print("\n--- Verifying dataset structure ---")
-with open(output_filename, 'r') as f:
+print(f"✅ Generated {len(synthetic_dataset)} examples.")
+print(f"   - Data saved to: {data_output_filename}")
+print(f"   - Metadata saved to: {metadata_output_filename}")
+
+
+# --- 7. Verification Step ---
+print("\n--- Verifying file structures ---")
+
+# Verify data file
+with open(data_output_filename, 'r') as f:
     first_line = json.loads(f.readline())
-    print("Keys in the first JSON object:")
+    print("\nKeys in the first data object:")
     print(list(first_line.keys()))
-    print("\n'messages' structure in the first object:")
+    print("\n'messages' structure in the first data object:")
     for msg in first_line['messages']:
         print(f"- role: {msg['role']}")
-    print("\n'generation_info' in the first object:")
+
+# Verify metadata file
+with open(metadata_output_filename, 'r') as f:
+    first_line = json.loads(f.readline())
+    print("\nKeys in the first metadata object:")
+    print(list(first_line.keys()))
+    print("\n'generation_info' in the first metadata object:")
     print(first_line['generation_info'])
-    print("\n✅ Dataset format looks correct.")
+
+print("\n✅ Dataset and metadata formats look correct.")
